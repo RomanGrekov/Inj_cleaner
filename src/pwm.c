@@ -16,13 +16,10 @@ void PWM_init(void){
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-    GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
+    //GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP ;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource8, GPIO_AF_2);
-
-    /* TIM1 clock enable */
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1 , ENABLE);
 
     /* Time Base configuration */
     TIM_TimeBaseStructure.TIM_Prescaler = 0;
@@ -45,10 +42,16 @@ void PWM_init(void){
     TIM_OCInitStructure.TIM_Pulse = 0;
     TIM_OC1Init(TIM1, &TIM_OCInitStructure);
 
+        /* TIM1 clock enable */
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1 , ENABLE);
+
 }
 
 void PWM_start(void){
-  /* TIM1 counter enable */
+    /* TIM1 clock enable */
+    //RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1 , ENABLE);
+
+    /* TIM1 counter enable */
     TIM_Cmd(TIM1, ENABLE);
 
     /* TIM1 Main Output Enable */
@@ -56,7 +59,10 @@ void PWM_start(void){
 }
 
 void PWM_stop(void){
-  /* TIM1 counter enable */
+    /* TIM1 clock enable */
+    //RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1 , DISABLE);
+
+    /* TIM1 counter enable */
     TIM_Cmd(TIM1, DISABLE);
 
     /* TIM1 Main Output Enable */
@@ -84,7 +90,6 @@ void PWM_update(uint16_t pulse, uint16_t pause, uint16_t presc){
     period = (_pulse + _pause);
 
     TIM_TimeBaseStructure.TIM_Prescaler = _presc;
-    TIM_TimeBaseStructure.TIM_ClockDivision = 0;
     TIM_TimeBaseStructure.TIM_Period = period;
     TIM_TimeBaseInit(TIM1, &TIM_TimeBaseStructure);
     TIM_OCInitStructure.TIM_Pulse = _pulse;

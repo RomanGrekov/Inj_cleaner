@@ -15,5 +15,6 @@ enum{
 void buttons_init(void);
 void check_btn(void);
 uint8_t read_btn(void);
+void clean_btn(void);
 
 #endif /* BUTTONS_H_INCLUDED */

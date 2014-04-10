@@ -13,8 +13,20 @@
 #define ENC2_PIN2 11
 
 
-void EncoderScan1(uint16_t *counter, uint16_t step, uint16_t _min, uint16_t _max);
-void EncoderScan1(uint16_t *counter, uint16_t step, uint16_t _min, uint16_t _max);
+typedef struct{
+    uint32_t value;
+    uint32_t old_value;
+    uint16_t step;
+    uint16_t min;
+    uint16_t max;
+    uint16_t coef;
+    uint32_t pin1;
+    uint32_t pin2;
+    uint8_t old_state;
+    uint8_t direction;
+}Encoder;
+
+void EncoderScan(Encoder *enc_struct);
 
 void EncoderInit(void);
 

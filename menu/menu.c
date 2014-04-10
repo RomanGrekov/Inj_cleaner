@@ -2,7 +2,7 @@
 
 menuItem* selectedMenuItem;
 menuItem	NULL_ENTRY = {(void*)0, (void*)0, (void*)0, (void*)0, NULL_HANDLER, 0, {0x00}};
-uint8_t menu_changed=1;
+uint8_t menu_changed=0;
 
 //		  name    next	prev	parent		child	handler   view
 /*
@@ -19,8 +19,10 @@ MAKE_MENU(at_cmd,  ata_cmd, ata_cmd,  modem_cmd, NULL_ENTRY, NULL_HANDLER, 1, "a
 MAKE_MENU(ata_cmd,  at_cmd, at_cmd,  modem_cmd, NULL_ENTRY, NULL_HANDLER, 1, "ata command");
 MAKE_MENU(user_phone1,  user_phone2, user_phone2,  users_phones, NULL_ENTRY, add_user1_number, 1, "Number 1");
 */
-MAKE_MENU(test1_menu,  test2_menu, test2_menu,  NULL_ENTRY, NULL_ENTRY, test1, 1, "Test 1");
-MAKE_MENU(test2_menu,  test1_menu, test1_menu,  NULL_ENTRY, NULL_ENTRY, test2, 1, "Test 2");
+MAKE_MENU(test1_menu,  test2_menu, test4_menu,  NULL_ENTRY, NULL_ENTRY, drain_test1, 1, "Drain test 1");
+MAKE_MENU(test2_menu,  test3_menu, test1_menu,  NULL_ENTRY, NULL_ENTRY, drain_test2, 1, "Drain test 2");
+MAKE_MENU(test3_menu,  test4_menu, test2_menu,  NULL_ENTRY, NULL_ENTRY, cavitation_test1, 1, "Cavit test 1");
+MAKE_MENU(test4_menu,  test1_menu, test3_menu,  NULL_ENTRY, NULL_ENTRY, cavitation_test2, 1, "Cavit test 2");
 
 //MAKE_MENU(main_menu,  test1, test1,  NULL_ENTRY, test1, NULL_HANDLER, 0, "   Main screen");
 //MAKE_MENU(test1,  test1, test1,  main_menu, NULL_ENTRY, test_menu, 1, "test1");
@@ -33,7 +35,7 @@ uint8_t is_in_menu(void){
 	return 1;
 }
 void InitMenu(void){
-	selectedMenuItem = (menuItem*)&test1_menu;
+	selectedMenuItem = (menuItem*)&test4_menu;
 }
 
 uint8_t* GetCurMenuName(void){
@@ -116,3 +118,5 @@ void ProcessMenu(uint8_t btn){
 void callView(){
 	selectedMenuItem->handler();
 }
+
+

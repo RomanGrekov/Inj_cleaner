@@ -1,6 +1,7 @@
 #include "buttons.h"
 
-uint8_t btn;
+volatile uint8_t btn=0;
+uint8_t state=0;
 
 void buttons_init(void){
     GPIO_InitTypeDef GPIO_InitStructure;
@@ -11,13 +12,15 @@ void buttons_init(void){
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
     GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+    btn=0;
 }
 
 void check_btn(void){
-    uint8_t code=0;
-    static uint8_t press_cnt=0, old_code=0;
+    static uint16_t  code=0, old_code=0;
+    static uint16_t press_cnt=0;
 
-    code = (uint8_t)(~(GPIOB->IDR | 0b1111111111000000));
+    code = ~(GPIOB->IDR | 0b1111111111000000);
 
     if(code == old_code && code != 0) press_cnt++;
 
@@ -37,6 +40,8 @@ void check_btn(void){
             break;
         case 16:
             btn = BTN3;
+            state = ~state;
+            LED8(state);
             break;
         case 32:
             btn = BTN4;
@@ -48,8 +53,14 @@ void check_btn(void){
 }
 
 uint8_t read_btn(void){
-    uint8_t my_btn;
-    my_btn = btn;
+    return btn;
+}
+
+void clean_btn(void){
     btn=0;
-    return my_btn;
+}
+
+void LED8(uint8_t state){
+    if(state) GPIOC->ODR |= GPIO_Pin_8 ;
+    if(!state) GPIOC->ODR &= ~GPIO_Pin_8;
 }
