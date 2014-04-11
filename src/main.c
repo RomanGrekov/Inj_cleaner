@@ -40,7 +40,7 @@ int main(void)
     button = read_btn();
     if(button){
         ProcessMenu(button);
-        clean_btn();
+        //clean_btn();
     }
 
   }

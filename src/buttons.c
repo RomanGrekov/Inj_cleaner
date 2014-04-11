@@ -25,6 +25,8 @@ void check_btn(void){
     if(code == old_code && code != 0) press_cnt++;
 
     if(press_cnt >= treshhold && code == 0){
+                state = ~state;
+    LED8(state);
         switch(old_code){
         case 1:
             btn = ENC1_BTN;
@@ -40,8 +42,6 @@ void check_btn(void){
             break;
         case 16:
             btn = BTN3;
-            state = ~state;
-            LED8(state);
             break;
         case 32:
             btn = BTN4;
@@ -53,14 +53,19 @@ void check_btn(void){
 }
 
 uint8_t read_btn(void){
-    return btn;
+    uint8_t btn_old;
+    btn_old=btn;
+    btn=0;
+    return btn_old;
 }
 
 void clean_btn(void){
     btn=0;
 }
 
+
 void LED8(uint8_t state){
     if(state) GPIOC->ODR |= GPIO_Pin_8 ;
     if(!state) GPIOC->ODR &= ~GPIO_Pin_8;
 }
+

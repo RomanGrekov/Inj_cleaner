@@ -19,10 +19,14 @@ MAKE_MENU(at_cmd,  ata_cmd, ata_cmd,  modem_cmd, NULL_ENTRY, NULL_HANDLER, 1, "a
 MAKE_MENU(ata_cmd,  at_cmd, at_cmd,  modem_cmd, NULL_ENTRY, NULL_HANDLER, 1, "ata command");
 MAKE_MENU(user_phone1,  user_phone2, user_phone2,  users_phones, NULL_ENTRY, add_user1_number, 1, "Number 1");
 */
-MAKE_MENU(test1_menu,  test2_menu, test4_menu,  NULL_ENTRY, NULL_ENTRY, drain_test1, 1, "Drain test 1");
+MAKE_MENU(test1_menu,  test2_menu, test8_menu,  NULL_ENTRY, NULL_ENTRY, drain_test1, 1, "Drain test 1");
 MAKE_MENU(test2_menu,  test3_menu, test1_menu,  NULL_ENTRY, NULL_ENTRY, drain_test2, 1, "Drain test 2");
 MAKE_MENU(test3_menu,  test4_menu, test2_menu,  NULL_ENTRY, NULL_ENTRY, cavitation_test1, 1, "Cavit test 1");
-MAKE_MENU(test4_menu,  test1_menu, test3_menu,  NULL_ENTRY, NULL_ENTRY, cavitation_test2, 1, "Cavit test 2");
+MAKE_MENU(test4_menu,  test5_menu, test3_menu,  NULL_ENTRY, NULL_ENTRY, cavitation_test2, 1, "Cavit test 2");
+MAKE_MENU(test5_menu,  test6_menu, test4_menu,  NULL_ENTRY, NULL_ENTRY, balance_test1, 1, "Balance test 1");
+MAKE_MENU(test6_menu,  test7_menu, test5_menu,  NULL_ENTRY, NULL_ENTRY, balance_test2, 1, "Balance test 2");
+MAKE_MENU(test7_menu,  test8_menu, test6_menu,  NULL_ENTRY, NULL_ENTRY, balance_test3, 1, "Balance test 3");
+MAKE_MENU(test8_menu,  test1_menu, test7_menu,  NULL_ENTRY, NULL_ENTRY, balance_test4, 1, "Balance test 4");
 
 //MAKE_MENU(main_menu,  test1, test1,  NULL_ENTRY, test1, NULL_HANDLER, 0, "   Main screen");
 //MAKE_MENU(test1,  test1, test1,  main_menu, NULL_ENTRY, test_menu, 1, "test1");
@@ -35,7 +39,7 @@ uint8_t is_in_menu(void){
 	return 1;
 }
 void InitMenu(void){
-	selectedMenuItem = (menuItem*)&test4_menu;
+	selectedMenuItem = (menuItem*)&test8_menu;
 }
 
 uint8_t* GetCurMenuName(void){

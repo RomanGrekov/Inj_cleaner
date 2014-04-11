@@ -12,5 +12,9 @@ void drain_test1(void);
 void drain_test2(void);
 void cavitation_test1(void);
 void cavitation_test2(void);
+void balance_test1(void);
+void balance_test2(void);
+void balance_test3(void);
+void balance_test4(void);
 
 #endif /* TEST1_H_INCLUDED */

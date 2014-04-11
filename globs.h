@@ -11,7 +11,7 @@ struct enc_struct{
 };
 
 struct SavedDomain{
-	uint32_t enc[40];
+	uint32_t enc[60];
 };
 #pragma pack(pop)
 extern struct SavedDomain SysConf;

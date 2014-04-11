@@ -27,6 +27,7 @@ uint8_t test_n;
 uint8_t button, sm_changed=1, exit=0, t_1=0, t_2=0, t_3=0, t_4=0;
 uint8_t pwm_state=0;
 uint8_t freq_rev=0;
+
 //====================================================================================
 
 void test(void){
@@ -41,18 +42,11 @@ void test(void){
 
     lcd_clrscr();
 
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, ENABLE);
-
-    GPIOC->MODER |= GPIO_MODER_MODER8_0; //Pins 8,9 as output
-    GPIOC->MODER &= ~GPIO_MODER_MODER8_1;
-    GPIOC->OTYPER &= ~GPIO_OTYPER_OT_8; //Output push-pull
-    GPIOC->OSPEEDR |= GPIO_OSPEEDR_OSPEEDR8; //High speed
-
     PWM_init();
 
     EncoderInit();
 
-    clean_btn();
+    //clean_btn();
 
     t_1=Slow_Timer_Add(tm_Repeat, 100, UpdateLcd);
     t_2=Slow_Timer_Add(tm_Repeat, 1, EncoderScan_1);
@@ -135,6 +129,7 @@ void LED9(uint8_t state){
 
 void handle_buttons(void){
     button = read_btn();
+
     if(button){
         sm_changed=1;
         if(button == BTN4){
@@ -168,7 +163,7 @@ void handle_buttons(void){
         if(button == ENC1_BTN){
             flash_write_struct(&SysConf, sizeof(SysConf));
         }
-        clean_btn();
+        //clean_btn();
     }
 }
 
@@ -354,3 +349,120 @@ enc2_struct.direction=0;
 
 test();
 }
+
+void balance_test1(void){
+test_n=4;
+flash_read_struct(&SysConf, sizeof(SysConf));
+
+enc1_struct.value=*(SysConf.enc+test_n*8);
+enc1_struct.old_value=0;
+enc1_struct.step=1;
+enc1_struct.min=1;
+enc1_struct.max=50;
+enc1_struct.coef=1000;
+enc1_struct.pin1=6;
+enc1_struct.pin2=7;
+enc1_struct.old_state=3;
+enc1_struct.direction=0;
+
+enc2_struct.value=*(SysConf.enc+test_n*8+4);
+enc2_struct.old_value=0;
+enc2_struct.step=1;
+enc2_struct.min=1;
+enc2_struct.max=50;
+enc2_struct.coef=1000;
+enc2_struct.pin1=10;
+enc2_struct.pin2=11;
+enc2_struct.old_state=3;
+enc2_struct.direction=0;
+
+test();
+}
+
+void balance_test2(void){
+test_n=5;
+flash_read_struct(&SysConf, sizeof(SysConf));
+
+enc1_struct.value=*(SysConf.enc+test_n*8);
+enc1_struct.old_value=0;
+enc1_struct.step=1;
+enc1_struct.min=1;
+enc1_struct.max=50;
+enc1_struct.coef=1000;
+enc1_struct.pin1=6;
+enc1_struct.pin2=7;
+enc1_struct.old_state=3;
+enc1_struct.direction=0;
+
+enc2_struct.value=*(SysConf.enc+test_n*8+4);
+enc2_struct.old_value=0;
+enc2_struct.step=1;
+enc2_struct.min=1;
+enc2_struct.max=50;
+enc2_struct.coef=1000;
+enc2_struct.pin1=10;
+enc2_struct.pin2=11;
+enc2_struct.old_state=3;
+enc2_struct.direction=0;
+
+test();
+}
+
+void balance_test3(void){
+test_n=6;
+flash_read_struct(&SysConf, sizeof(SysConf));
+
+enc1_struct.value=*(SysConf.enc+test_n*8);
+enc1_struct.old_value=0;
+enc1_struct.step=1;
+enc1_struct.min=1;
+enc1_struct.max=50;
+enc1_struct.coef=1000;
+enc1_struct.pin1=6;
+enc1_struct.pin2=7;
+enc1_struct.old_state=3;
+enc1_struct.direction=0;
+
+enc2_struct.value=*(SysConf.enc+test_n*8+4);
+enc2_struct.old_value=0;
+enc2_struct.step=10;
+enc2_struct.min=10;
+enc2_struct.max=1000;
+enc2_struct.coef=1000;
+enc2_struct.pin1=10;
+enc2_struct.pin2=11;
+enc2_struct.old_state=3;
+enc2_struct.direction=0;
+
+test();
+}
+
+void balance_test4(void){
+test_n=7;
+flash_read_struct(&SysConf, sizeof(SysConf));
+
+enc1_struct.value=*(SysConf.enc+test_n*8);
+enc1_struct.old_value=0;
+enc1_struct.step=1;
+enc1_struct.min=1;
+enc1_struct.max=50;
+enc1_struct.coef=1000;
+enc1_struct.pin1=6;
+enc1_struct.pin2=7;
+enc1_struct.old_state=3;
+enc1_struct.direction=0;
+
+enc2_struct.value=*(SysConf.enc+test_n*8+4);
+enc2_struct.old_value=0;
+enc2_struct.step=10;
+enc2_struct.min=10;
+enc2_struct.max=1000;
+enc2_struct.coef=1000;
+enc2_struct.pin1=10;
+enc2_struct.pin2=11;
+enc2_struct.old_state=3;
+enc2_struct.direction=0;
+
+test();
+}
+
