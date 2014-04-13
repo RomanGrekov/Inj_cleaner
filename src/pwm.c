@@ -98,7 +98,8 @@ void PWM_update(uint16_t pulse, uint16_t pause, uint16_t presc){
 }
 
 uint32_t get_tact(uint32_t us , uint32_t my_f_cpu){
-    return (us*(my_f_cpu/1000000));
+    if (my_f_cpu >= 1000000)return (us*(my_f_cpu/1000000));
+    else ((us*my_f_cpu)/1000000);
 }
 
 void PWM_set(uint32_t pulse, uint32_t pause){
