@@ -1,6 +1,8 @@
 #include "test1.h"
 #include "../slow_timer/slow_timer.h"
 #include "../flash/flash.h"
+#include "stm32f0xx.h"
+#include "../globs.h"
 
 //=======================Sys variables===============================
 void UpdateLcd(void);
@@ -13,18 +15,19 @@ void get_f(void);
 void Stop(void);
 void var_init(void);
 uint8_t get_time_symb(uint32_t value);
+void Decrem_seconds(void);
 
 uint16_t duration=0;
 uint16_t dur_values[8]={0,5,10,30,60,120,300,600};
+uint16_t dur_time=0;
 uint8_t chars[10];
 
 Encoder enc1_struct;
 Encoder enc2_struct;
 
-struct SavedDomain SysConf;
 uint8_t test_n;
 
-uint8_t button, sm_changed=1, exit=0, t_1=0, t_2=0, t_3=0, t_4=0;
+uint8_t button, sm_changed=1, exit=0, t_1=0, t_2=0, t_3=0, t_4=0, t_5=0;
 uint8_t pwm_state=0;
 uint8_t freq_rev=0;
 
@@ -32,6 +35,7 @@ uint8_t freq_rev=0;
 
 void test(void){
     duration=0;
+    dur_time=dur_values[duration];
 
     button=0;
     sm_changed=1;
@@ -64,7 +68,7 @@ void test(void){
 }
 
 void UpdateLcd(void){
-    char my_char[8]={0};
+    uint8_t my_char[8]={0};
 
     handle_buttons();
 
@@ -72,7 +76,7 @@ void UpdateLcd(void){
         sm_changed=0;
         lcd_clrscr();
 
-        itoa_fix(dur_values[duration], 10, 3, chars);
+        itoa_fix(dur_time, 10, 3, chars);
         lcd_prints("D:");
         lcd_prints(chars);
 
@@ -107,7 +111,7 @@ void EncoderScan_1(void){
     if(enc1_struct.value != enc1_struct.old_value){
         sm_changed=1;
         PWM_set(enc1_struct.value*enc1_struct.coef, enc2_struct.value*enc2_struct.coef);
-        *(SysConf.enc+test_n*8)=enc1_struct.value;
+        SysConf.enc[test_n*2]=enc1_struct.value;
     }
     enc1_struct.old_value = enc1_struct.value;
 }
@@ -117,7 +121,7 @@ void EncoderScan_2(void){
     if(enc2_struct.value != enc2_struct.old_value){
         sm_changed=1;
         PWM_set(enc1_struct.value*enc1_struct.coef, enc2_struct.value*enc2_struct.coef);
-        *(SysConf.enc+test_n*8+4)=enc2_struct.value;
+        SysConf.enc[test_n*2+1]=enc2_struct.value;
     }
     enc2_struct.old_value = enc2_struct.value;
 }
@@ -136,13 +140,18 @@ void handle_buttons(void){
             pwm_state = ~pwm_state;
             if(pwm_state){
                 PWM_start();
-                if(duration != 0)t_4 = Slow_Timer_Add(tm_Once, dur_values[duration]*1000, Stop);
+                if(duration != 0){
+                        t_4 = Slow_Timer_Add(tm_Once, dur_time*1000, Stop);
+                        t_5 = Slow_Timer_Add(tm_Repeat, 1000, Decrem_seconds);
+                }
             }
             else{
                 Stop();
                 if(t_4 != 0){
                     Slow_Timer_Delete(t_4);
+                    Slow_Timer_Delete(t_5);
                     t_4=0;
+                    t_5=0;
                 }
             }
             LED9(pwm_state);
@@ -150,10 +159,12 @@ void handle_buttons(void){
         if(button == BTN1){
             if(duration > 0)duration--;
             else duration = ((sizeof(dur_values)/2)-1);
+            dur_time = dur_values[duration];
         }
         if(button == BTN3){
             if(duration < ((sizeof(dur_values)/2)-1))duration++;
             else duration = 0;
+            dur_time = dur_values[duration];
         }
         if(button == BTN2){
             if(!pwm_state)exit=1;
@@ -232,13 +243,22 @@ uint8_t get_time_symb(uint32_t value){
         if(value >= 1000000)return 'S';
 }
 
+void Decrem_seconds(void){
+    if (dur_time == 0){
+        Slow_Timer_Delete(t_5);
+        t_5=0;
+        return;
+    }
+    dur_time--;
+    sm_changed=1;
+}
 
 ///=======Tests===========================================================
 void drain_test1(void){
 test_n=0;
 flash_read_struct(&SysConf, sizeof(SysConf));
 
-enc1_struct.value=*(SysConf.enc+test_n*8);
+enc1_struct.value=SysConf.enc[test_n*2];
 enc1_struct.old_value=0;
 enc1_struct.step=10;
 enc1_struct.min=1;
@@ -249,7 +269,7 @@ enc1_struct.pin2=7;
 enc1_struct.old_state=3;
 enc1_struct.direction=0;
 
-enc2_struct.value=*(SysConf.enc+test_n*8+4);
+enc2_struct.value=SysConf.enc[test_n*2+1];
 enc2_struct.old_value=0;
 enc2_struct.step=1;
 enc2_struct.min=1;
@@ -267,7 +287,7 @@ void drain_test2(void){
 test_n=1;
 flash_read_struct(&SysConf, sizeof(SysConf));
 
-enc1_struct.value=*(SysConf.enc+test_n*8);
+enc1_struct.value=SysConf.enc[test_n*2];
 enc1_struct.old_value=0;
 enc1_struct.step=10;
 enc1_struct.min=1;
@@ -278,7 +298,7 @@ enc1_struct.pin2=7;
 enc1_struct.old_state=3;
 enc1_struct.direction=0;
 
-enc2_struct.value=*(SysConf.enc+test_n*8+4);
+enc2_struct.value=SysConf.enc[test_n*2+1];
 enc2_struct.old_value=0;
 enc2_struct.step=10;
 enc2_struct.min=1;
@@ -296,7 +316,7 @@ void cavitation_test1(void){
 test_n=2;
 flash_read_struct(&SysConf, sizeof(SysConf));
 
-enc1_struct.value=*(SysConf.enc+test_n*8);
+enc1_struct.value=SysConf.enc[test_n*2];
 enc1_struct.old_value=0;
 enc1_struct.step=1;
 enc1_struct.min=1;
@@ -307,7 +327,7 @@ enc1_struct.pin2=7;
 enc1_struct.old_state=3;
 enc1_struct.direction=0;
 
-enc2_struct.value=*(SysConf.enc+test_n*8+4);
+enc2_struct.value=SysConf.enc[test_n*2+1];
 enc2_struct.old_value=0;
 enc2_struct.step=1;
 enc2_struct.min=1;
@@ -325,7 +345,7 @@ void cavitation_test2(void){
 test_n=3;
 flash_read_struct(&SysConf, sizeof(SysConf));
 
-enc1_struct.value=*(SysConf.enc+test_n*8);
+enc1_struct.value=SysConf.enc[test_n*2];
 enc1_struct.old_value=0;
 enc1_struct.step=10;
 enc1_struct.min=1;
@@ -336,7 +356,7 @@ enc1_struct.pin2=7;
 enc1_struct.old_state=3;
 enc1_struct.direction=0;
 
-enc2_struct.value=*(SysConf.enc+test_n*8+4);
+enc2_struct.value=SysConf.enc[test_n*2+1];
 enc2_struct.old_value=0;
 enc2_struct.step=10;
 enc2_struct.min=1;
@@ -351,10 +371,11 @@ test();
 }
 
 void balance_test1(void){
+
 test_n=4;
 flash_read_struct(&SysConf, sizeof(SysConf));
 
-enc1_struct.value=*(SysConf.enc+test_n*8);
+enc1_struct.value=SysConf.enc[test_n*2];
 enc1_struct.old_value=0;
 enc1_struct.step=1;
 enc1_struct.min=1;
@@ -365,7 +386,7 @@ enc1_struct.pin2=7;
 enc1_struct.old_state=3;
 enc1_struct.direction=0;
 
-enc2_struct.value=*(SysConf.enc+test_n*8+4);
+enc2_struct.value=SysConf.enc[test_n*2+1];
 enc2_struct.old_value=0;
 enc2_struct.step=1;
 enc2_struct.min=1;
@@ -383,7 +404,7 @@ void balance_test2(void){
 test_n=5;
 flash_read_struct(&SysConf, sizeof(SysConf));
 
-enc1_struct.value=*(SysConf.enc+test_n*8);
+enc1_struct.value=SysConf.enc[test_n*2];
 enc1_struct.old_value=0;
 enc1_struct.step=1;
 enc1_struct.min=1;
@@ -394,7 +415,7 @@ enc1_struct.pin2=7;
 enc1_struct.old_state=3;
 enc1_struct.direction=0;
 
-enc2_struct.value=*(SysConf.enc+test_n*8+4);
+enc2_struct.value=SysConf.enc[test_n*2+1];;
 enc2_struct.old_value=0;
 enc2_struct.step=1;
 enc2_struct.min=1;
@@ -412,7 +433,7 @@ void balance_test3(void){
 test_n=6;
 flash_read_struct(&SysConf, sizeof(SysConf));
 
-enc1_struct.value=*(SysConf.enc+test_n*8);
+enc1_struct.value=SysConf.enc[test_n*2];
 enc1_struct.old_value=0;
 enc1_struct.step=1;
 enc1_struct.min=1;
@@ -423,7 +444,7 @@ enc1_struct.pin2=7;
 enc1_struct.old_state=3;
 enc1_struct.direction=0;
 
-enc2_struct.value=*(SysConf.enc+test_n*8+4);
+enc2_struct.value=SysConf.enc[test_n*2+1];
 enc2_struct.old_value=0;
 enc2_struct.step=10;
 enc2_struct.min=10;
@@ -441,7 +462,7 @@ void balance_test4(void){
 test_n=7;
 flash_read_struct(&SysConf, sizeof(SysConf));
 
-enc1_struct.value=*(SysConf.enc+test_n*8);
+enc1_struct.value=SysConf.enc[test_n*2];
 enc1_struct.old_value=0;
 enc1_struct.step=1;
 enc1_struct.min=1;
@@ -452,7 +473,7 @@ enc1_struct.pin2=7;
 enc1_struct.old_state=3;
 enc1_struct.direction=0;
 
-enc2_struct.value=*(SysConf.enc+test_n*8+4);
+enc2_struct.value=SysConf.enc[test_n*2+1];
 enc2_struct.old_value=0;
 enc2_struct.step=10;
 enc2_struct.min=10;

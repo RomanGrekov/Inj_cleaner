@@ -21,7 +21,7 @@
 #include "../inc/buttons.h"
 #include "../menu/menu.h"
 #include "../flash/flash.h"
-//#include "../globs.h"
+#include "../globs.h"
 
 void Init(void);
 
@@ -40,7 +40,13 @@ int main(void)
     button = read_btn();
     if(button){
         ProcessMenu(button);
-        //clean_btn();
+
+        if(button == ENC2_BTN){
+            for(uint32_t i; i<sizeof(SysConf.enc)/4; i++){
+                SysConf.enc[i]=0;
+            }
+            flash_write_struct(&SysConf, sizeof(SysConf));
+        }
     }
 
   }

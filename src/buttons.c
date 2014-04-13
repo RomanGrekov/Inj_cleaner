@@ -23,10 +23,10 @@ void check_btn(void){
     code = ~(GPIOB->IDR | 0b1111111111000000);
 
     if(code == old_code && code != 0) press_cnt++;
-
-    if(press_cnt >= treshhold && code == 0){
-                state = ~state;
+  state = ~state;
     LED8(state);
+    if(press_cnt >= treshhold && code == 0){
+
         switch(old_code){
         case 1:
             btn = ENC1_BTN;

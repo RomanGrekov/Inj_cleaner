@@ -1,5 +1,4 @@
 #include "flash.h"
-#include "../globs.h"
 #include "stm32f0xx_flash.h"
 
 
@@ -32,18 +31,18 @@ uint32_t read_flash(uint32_t address){
     return *(__IO uint32_t *)address;
 }
 
-void flash_read_struct(uint32_t *struct_p, uint32_t size){
-	for(uint32_t i=0; i<size; i+=4){
-		*(struct_p+i)=*(__IO uint32_t*)(FLASH_USER_START_ADDR+i);
+void flash_read_struct(struct SavedDomain *struct_p, uint32_t size){
+	for(uint32_t i=0; i<(size/4); i++){
+		struct_p->enc[i]=*(__IO uint32_t*)(FLASH_USER_START_ADDR+i*4);
 	}
 }
 
-void flash_write_struct(uint32_t *struct_p, uint32_t size){
+void flash_write_struct(struct SavedDomain *struct_p, uint32_t size){
 	uint16_t data=0;
 
 	erase_flash(FLASH_USER_START_ADDR);
 
-	for(uint32_t i=0; i<size; i+=4){
-        write_flash(FLASH_USER_START_ADDR+i, *(struct_p+i));
+	for(uint32_t i=0; i<(size/4); i++){
+        write_flash(FLASH_USER_START_ADDR+i*4, struct_p->enc[i]);
 	}
 }

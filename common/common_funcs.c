@@ -24,7 +24,7 @@ void itoa(uint32_t val, uint32_t base,  char *bufstr)
 void itoa_fix(uint32_t val, uint32_t base,  uint8_t size, char *bufstr)
 {
 	uint8_t buf[32] = {0};
-	int i = 31, j = 0, cnt=0;
+	uint8_t i = 31, j = 0, cnt=0;
 	do{
 		buf[i] = "0123456789abcdef"[val % base];
 		val = val/base;
@@ -34,7 +34,8 @@ void itoa_fix(uint32_t val, uint32_t base,  uint8_t size, char *bufstr)
 
 	buf[i] = 0;
 	i++;
-	while (i < 32)
+
+	while (i < 32 && j < size)
 	{
         if(cnt < size){
            bufstr[j] = ' ';
@@ -46,6 +47,7 @@ void itoa_fix(uint32_t val, uint32_t base,  uint8_t size, char *bufstr)
 		i++;
 		j++;
 	}
+
 	bufstr[j]=0;
 }
 
