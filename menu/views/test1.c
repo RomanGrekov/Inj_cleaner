@@ -82,9 +82,9 @@ void UpdateLcd(void){
         sm_changed=0;
         lcd_clrscr();
 
-        itoa_fix(dur_time, 10, 3, chars);
+        itoa_fix(dur_time, 10, 3, my_char);
         lcd_prints("D:");
-        lcd_prints(chars);
+        lcd_prints(my_char);
 
         if(freq_rev == 0){
             get_f();
@@ -113,7 +113,7 @@ void UpdateLcd(void){
 }
 
 void UpdateLcd_percent(void){
-    uint8_t my_char[8]={0};
+    uint8_t my_char[8]={0,0,0,0,0,0,0,0};
 
     handle_buttons();
 
@@ -123,7 +123,7 @@ void UpdateLcd_percent(void){
 
         itoa_fix(dur_time, 10, 3, my_char);
         lcd_prints("D:");
-        lcd_prints(chars);
+        lcd_prints(my_char);
 
         lcd_goto(2,0);
         lcd_prints("H:");
