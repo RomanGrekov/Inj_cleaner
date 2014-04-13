@@ -6,6 +6,7 @@
 
 //=======================Sys variables===============================
 void UpdateLcd(void);
+void UpdateLcd_percent(void);
 void EncoderScan_1(void);
 void EncoderScan_2(void);
 void LED8(uint8_t state);
@@ -31,6 +32,10 @@ uint8_t button, sm_changed=1, exit=0, t_1=0, t_2=0, t_3=0, t_4=0, t_5=0;
 uint8_t pwm_state=0;
 uint8_t freq_rev=0;
 
+void (*lcd_upd)(void);
+void (*enc1_handler)(void);
+void (*enc2_handler)(void);
+
 //====================================================================================
 
 void test(void){
@@ -52,9 +57,9 @@ void test(void){
 
     //clean_btn();
 
-    t_1=Slow_Timer_Add(tm_Repeat, 100, UpdateLcd);
-    t_2=Slow_Timer_Add(tm_Repeat, 1, EncoderScan_1);
-    t_3=Slow_Timer_Add(tm_Repeat, 1, EncoderScan_2);
+    t_1=Slow_Timer_Add(tm_Repeat, 100, (*lcd_upd));
+    t_2=Slow_Timer_Add(tm_Repeat, 1, (*enc1_handler));
+    t_3=Slow_Timer_Add(tm_Repeat, 1, (*enc2_handler));
 
     while(exit == 0)
     {
@@ -106,6 +111,33 @@ void UpdateLcd(void){
     }
 }
 
+void UpdateLcd_percent(void){
+    uint8_t my_char[8]={0};
+
+    handle_buttons();
+
+    if(sm_changed){
+        sm_changed=0;
+        lcd_clrscr();
+
+        itoa_fix(dur_time, 10, 3, my_char);
+        lcd_prints("D:");
+        lcd_prints(chars);
+
+        lcd_goto(2,0);
+        lcd_prints("H:");
+        itoa_fix(enc1_struct.value, 10, 3, my_char);
+        lcd_prints(my_char);
+        lcd_putc('%');
+
+        lcd_prints(" ");
+        lcd_prints("L:");
+        itoa_fix(enc2_struct.value, 10, 4, my_char);
+        lcd_prints(my_char);
+        lcd_prints("r/m");
+    }
+}
+
 void EncoderScan_1(void){
     EncoderScan(&enc1_struct);
     if(enc1_struct.value != enc1_struct.old_value){
@@ -126,6 +158,36 @@ void EncoderScan_2(void){
     enc2_struct.old_value = enc2_struct.value;
 }
 
+void EncoderScan_1_percent(void){
+    uint32_t enc1;
+    uint32_t p;
+    EncoderScan(&enc1_struct);
+    if(enc1_struct.value != enc1_struct.old_value){
+        sm_changed=1;
+        p = 1000000/(enc2_struct.value/30);
+        enc1 = (p/100)*enc1_struct.value;
+
+        PWM_set(enc1, p-enc1);
+        SysConf.enc[test_n*2]=enc1_struct.value;
+    }
+    enc1_struct.old_value = enc1_struct.value;
+}
+
+void EncoderScan_2_percent(void){
+    uint32_t enc1;
+    uint32_t p;
+    EncoderScan(&enc2_struct);
+    if(enc2_struct.value != enc2_struct.old_value){
+        sm_changed=1;
+         p = 1000000/(enc2_struct.value/30);
+        enc1 = (p/100)*enc1_struct.value;
+
+        PWM_set(enc1, p-enc1);
+        SysConf.enc[test_n*2+1]=enc2_struct.value;
+    }
+    enc2_struct.old_value = enc2_struct.value;
+}
+
 void LED9(uint8_t state){
     if(state) GPIOC->ODR |= GPIO_Pin_9 ;
     if(!state) GPIOC->ODR &= ~GPIO_Pin_9;
@@ -139,19 +201,23 @@ void handle_buttons(void){
         if(button == BTN4){
             pwm_state = ~pwm_state;
             if(pwm_state){
+                dur_time = dur_values[duration];
                 PWM_start();
                 if(duration != 0){
-                        t_4 = Slow_Timer_Add(tm_Once, dur_time*1000, Stop);
+                        t_4 = Slow_Timer_Add(tm_Once, dur_values[duration]*1000, Stop);
                         t_5 = Slow_Timer_Add(tm_Repeat, 1000, Decrem_seconds);
                 }
             }
             else{
                 Stop();
+                dur_time = dur_values[duration];
                 if(t_4 != 0){
                     Slow_Timer_Delete(t_4);
-                    Slow_Timer_Delete(t_5);
                     t_4=0;
-                    t_5=0;
+                }
+                if(t_5 != 0){
+                   Slow_Timer_Delete(t_5);
+                   t_5=0;
                 }
             }
             LED9(pwm_state);
@@ -247,9 +313,10 @@ void Decrem_seconds(void){
     if (dur_time == 0){
         Slow_Timer_Delete(t_5);
         t_5=0;
-        return;
+        dur_time = dur_values[duration];
     }
-    dur_time--;
+    else dur_time--;
+
     sm_changed=1;
 }
 
@@ -280,6 +347,10 @@ enc2_struct.pin2=11;
 enc2_struct.old_state=3;
 enc2_struct.direction=0;
 
+lcd_upd = &UpdateLcd;
+enc1_handler=&EncoderScan_1;
+enc2_handler=&EncoderScan_2;
+
 test();
 }
 
@@ -309,6 +380,9 @@ enc2_struct.pin2=11;
 enc2_struct.old_state=3;
 enc2_struct.direction=0;
 
+lcd_upd = &UpdateLcd;
+enc1_handler=&EncoderScan_1;
+enc2_handler=&EncoderScan_2;
 test();
 }
 
@@ -338,6 +412,9 @@ enc2_struct.pin2=11;
 enc2_struct.old_state=3;
 enc2_struct.direction=0;
 
+lcd_upd = &UpdateLcd;
+enc1_handler=&EncoderScan_1;
+enc2_handler=&EncoderScan_2;
 test();
 }
 
@@ -367,6 +444,9 @@ enc2_struct.pin2=11;
 enc2_struct.old_state=3;
 enc2_struct.direction=0;
 
+lcd_upd = &UpdateLcd;
+enc1_handler=&EncoderScan_1;
+enc2_handler=&EncoderScan_2;
 test();
 }
 
@@ -397,6 +477,9 @@ enc2_struct.pin2=11;
 enc2_struct.old_state=3;
 enc2_struct.direction=0;
 
+lcd_upd = &UpdateLcd;
+enc1_handler=&EncoderScan_1;
+enc2_handler=&EncoderScan_2;
 test();
 }
 
@@ -426,6 +509,9 @@ enc2_struct.pin2=11;
 enc2_struct.old_state=3;
 enc2_struct.direction=0;
 
+lcd_upd = &UpdateLcd;
+enc1_handler=&EncoderScan_1;
+enc2_handler=&EncoderScan_2;
 test();
 }
 
@@ -455,6 +541,9 @@ enc2_struct.pin2=11;
 enc2_struct.old_state=3;
 enc2_struct.direction=0;
 
+lcd_upd = &UpdateLcd;
+enc1_handler=&EncoderScan_1;
+enc2_handler=&EncoderScan_2;
 test();
 }
 
@@ -484,6 +573,41 @@ enc2_struct.pin2=11;
 enc2_struct.old_state=3;
 enc2_struct.direction=0;
 
+lcd_upd = &UpdateLcd;
+enc1_handler=&EncoderScan_1;
+enc2_handler=&EncoderScan_2;
+test();
+}
+
+void rpm_test1(void){
+test_n=7;
+flash_read_struct(&SysConf, sizeof(SysConf));
+
+enc1_struct.value=SysConf.enc[test_n*2];
+enc1_struct.old_value=0;
+enc1_struct.step=1;
+enc1_struct.min=1;
+enc1_struct.max=100;
+//enc1_struct.coef=1;
+enc1_struct.pin1=6;
+enc1_struct.pin2=7;
+enc1_struct.old_state=3;
+enc1_struct.direction=0;
+
+enc2_struct.value=SysConf.enc[test_n*2+1];
+enc2_struct.old_value=0;
+enc2_struct.step=50;
+enc2_struct.min=400;
+enc2_struct.max=8000;
+//enc2_struct.coef=1;
+enc2_struct.pin1=10;
+enc2_struct.pin2=11;
+enc2_struct.old_state=3;
+enc2_struct.direction=0;
+
+lcd_upd = &UpdateLcd_percent;
+enc1_handler=&EncoderScan_1_percent;
+enc2_handler=&EncoderScan_2_percent;
 test();
 }
 

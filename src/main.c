@@ -26,8 +26,7 @@
 void Init(void);
 
 uint8_t button;
-char my_data[3];
-
+uint8_t state=0;
 
 int main(void)
 {
@@ -39,6 +38,8 @@ int main(void)
   {
     button = read_btn();
     if(button){
+        state = ~state;
+        LED8(state);
         ProcessMenu(button);
 
         if(button == ENC2_BTN){
@@ -48,6 +49,7 @@ int main(void)
             flash_write_struct(&SysConf, sizeof(SysConf));
         }
     }
+    for(uint32_t i=0; i<1000; i++);
 
   }
 }
@@ -69,6 +71,10 @@ void Init(void){
     Slow_Timer_Add(tm_Repeat, 10, check_btn);
 }
 
+void LED8(uint8_t state){
+    if(state) GPIOC->ODR |= GPIO_Pin_8 ;
+    if(!state) GPIOC->ODR &= ~GPIO_Pin_8;
+}
 
 
 

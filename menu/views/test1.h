@@ -16,5 +16,6 @@ void balance_test1(void);
 void balance_test2(void);
 void balance_test3(void);
 void balance_test4(void);
+void rpm_test1(void);
 
 #endif /* TEST1_H_INCLUDED */

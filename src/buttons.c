@@ -1,7 +1,6 @@
 #include "buttons.h"
 
 volatile uint8_t btn=0;
-uint8_t state=0;
 
 void buttons_init(void){
     GPIO_InitTypeDef GPIO_InitStructure;
@@ -23,8 +22,7 @@ void check_btn(void){
     code = ~(GPIOB->IDR | 0b1111111111000000);
 
     if(code == old_code && code != 0) press_cnt++;
-  state = ~state;
-    LED8(state);
+
     if(press_cnt >= treshhold && code == 0){
 
         switch(old_code){
@@ -63,9 +61,4 @@ void clean_btn(void){
     btn=0;
 }
 
-
-void LED8(uint8_t state){
-    if(state) GPIOC->ODR |= GPIO_Pin_8 ;
-    if(!state) GPIOC->ODR &= ~GPIO_Pin_8;
-}
 
