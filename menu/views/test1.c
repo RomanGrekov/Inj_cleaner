@@ -3,6 +3,7 @@
 #include "../flash/flash.h"
 #include "stm32f0xx.h"
 #include "../globs.h"
+#include "../buzzer/buz.h"
 
 //=======================Sys variables===============================
 void UpdateLcd(void);
@@ -55,7 +56,7 @@ void test(void){
 
     EncoderInit();
 
-    //clean_btn();
+    InitBuz();
 
     t_1=Slow_Timer_Add(tm_Repeat, 100, (*lcd_upd));
     t_2=Slow_Timer_Add(tm_Repeat, 1, (*enc1_handler));
@@ -203,6 +204,7 @@ void handle_buttons(void){
             if(pwm_state){
                 dur_time = dur_values[duration];
                 PWM_start();
+                Bzz(0);
                 if(duration != 0){
                         t_4 = Slow_Timer_Add(tm_Once, dur_values[duration]*1000, Stop);
                         t_5 = Slow_Timer_Add(tm_Repeat, 1000, Decrem_seconds);
@@ -210,6 +212,7 @@ void handle_buttons(void){
             }
             else{
                 Stop();
+                Bzz(1);
                 dur_time = dur_values[duration];
                 if(t_4 != 0){
                     Slow_Timer_Delete(t_4);
@@ -299,6 +302,7 @@ void get_r(void){
 
 void Stop(void){
     PWM_stop();
+    Bzz(1);
     pwm_state=0;
     LED9(pwm_state);
 }
