@@ -13,28 +13,46 @@ void InitBuz (void)
 
 void Bzz(uint8_t variant)
 {
-	uint32_t lenght, d1, d2;
-	uint32_t i;
+    uint8_t x=5, y=2;
+	uint32_t lenght, d[x][y];
+	uint32_t i=0, ii=0, l=0;
 
 	switch (variant)
 	{
 	case 0:
-		lenght = 80;
-		d1 = 40;
-		d2 = 6;
+		lenght = 20;
+        d[0][0]=50;d[0][1]=5;
+        d[1][0]=20;d[1][1]=5;
+        d[2][0]=30;d[2][1]=5;
+        d[3][0]=50;d[3][1]=5;
+        d[4][0]=50;d[4][1]=5;
 		break;
 	case 1:
-		lenght = 120;
-		d1 = 15;
-		d2 = 5;
+		lenght = 100;
+        d[0][0]=50;d[0][1]=5;
+        d[1][0]=30;d[1][1]=5;
+        d[2][0]=50;d[2][1]=5;
+        d[3][0]=30;d[3][1]=5;
+        d[4][0]=50;d[4][1]=5;
+		break;
+    case 2:
+		lenght = 10;
+        d[0][0]=20;d[0][1]=2;
+        d[1][0]=15;d[1][1]=2;
+        d[2][0]=10;d[2][1]=2;
+        d[3][0]=5;d[3][1]=2;
+        d[4][0]=2;d[4][1]=2;
 		break;
 	}
 
-	for (i=0; i<lenght; i++)
-	{
-		GPIOC->ODR |= GPIO_Pin_12 ;
-		for(uint32_t i=0; i<((F_CPU/1000000)*d1); i++);
-		GPIOC->ODR &= ~GPIO_Pin_12;
-		for(uint32_t i=0; i<((F_CPU/1000000)*d2); i++);
+
+    for(i=0; i<x; i++){
+        for (l=0; l<lenght; l++){
+            GPIOC->ODR |= GPIO_Pin_12 ;
+            for(uint32_t t=0; t<((F_CPU/1000000)*d[i][0]); t++);
+            GPIOC->ODR &= ~GPIO_Pin_12;
+            for(uint32_t t=0; t<((F_CPU/1000000)*d[i][1]); t++);
+
+	    }
 	}
 }

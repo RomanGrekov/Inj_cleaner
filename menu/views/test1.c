@@ -79,6 +79,7 @@ void UpdateLcd(void){
     handle_buttons();
 
     if(sm_changed){
+        Bzz(2);
         sm_changed=0;
         lcd_clrscr();
 
@@ -118,6 +119,7 @@ void UpdateLcd_percent(void){
     handle_buttons();
 
     if(sm_changed){
+        Bzz(2);
         sm_changed=0;
         lcd_clrscr();
 
