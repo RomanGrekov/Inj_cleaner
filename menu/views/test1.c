@@ -214,7 +214,6 @@ void handle_buttons(void){
             }
             else{
                 Stop();
-                Bzz(1);
                 dur_time = dur_values[duration];
                 if(t_4 != 0){
                     Slow_Timer_Delete(t_4);

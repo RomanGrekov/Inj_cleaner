@@ -73,6 +73,7 @@ void PWM_update(uint16_t pulse, uint16_t pause, uint16_t presc){
 
     uint16_t period, _presc, _pulse, _pause;
 
+    uint8_t my_char[8];
 
     if(presc > 0)_presc = presc - 1;
     else _presc = presc;
@@ -98,14 +99,21 @@ void PWM_update(uint16_t pulse, uint16_t pause, uint16_t presc){
 }
 
 uint32_t get_tact(uint32_t us , uint32_t my_f_cpu){
-    if (my_f_cpu >= 1000000)return (us*(my_f_cpu/1000000));
-    else ((us*my_f_cpu)/1000000);
+    uint32_t k=1;
+    if(us >= 1000000) k=1000;
+    if(us >= 100000) k=100;
+    if(us >= 10000) k=10;
+    if(my_f_cpu >= 1000000) return (((us/k) * (my_f_cpu/10000))/100)*k;
+    if(my_f_cpu >= 100000) return (((us/k) * (my_f_cpu/1000))/1000)*k;
+    if(my_f_cpu >= 10000) return (((us/k) * (my_f_cpu/100))/10000)*k;
+    if(my_f_cpu >= 1000) return (((us/k) * (my_f_cpu/10))/100000)*k;
+    return (us * (my_f_cpu/10))/100000;
+
 }
 
 void PWM_set(uint32_t pulse, uint32_t pause){
     uint32_t _pulse, _pause, _period;
     uint16_t clear_presc, presc=0;
-    uint16_t tact_per_us;
     uint32_t my_f_cpu;
     uint16_t ost;
 
@@ -114,11 +122,9 @@ void PWM_set(uint32_t pulse, uint32_t pause){
     _period = _pulse + _pause; //In tacts
 
     if(_period >= 65535){
-        tact_per_us = F_CPU/1000000;
-
         ost = _period % 65535;
         clear_presc = _period / 65535;
-        if(ost > 0) presc = (clear_presc + 1);
+        if(ost > 0) presc = clear_presc+1;
         else presc = clear_presc;
 
         my_f_cpu = F_CPU/presc;
